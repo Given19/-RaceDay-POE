@@ -3,12 +3,8 @@ name: Part 2 - Build and Test API
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'Part2/**'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'Part2/**'
 
 jobs:
   build-and-test:
@@ -23,10 +19,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore Part2/RaceDay.Api.slnx
+        run: dotnet restore Part2/RaceDay.Api.Tests/RaceDay.Api.Tests.csproj
 
       - name: Build
-        run: dotnet build Part2/RaceDay.Api.slnx --no-restore --configuration Release
+        run: dotnet build Part2/RaceDay.Api.Tests/RaceDay.Api.Tests.csproj --no-restore --configuration Release
 
       - name: Run unit tests
-        run: dotnet test Part2/RaceDay.Api.slnx --no-build --configuration Release --verbosity normal
+        run: dotnet test Part2/RaceDay.Api.Tests/RaceDay.Api.Tests.csproj --no-build --configuration Release --verbosity normal
