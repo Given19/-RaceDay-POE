@@ -92,4 +92,4 @@ The workflow `.github/workflows/part2-build-and-test.yml` restores, builds and r
 - Participants view their own results through `GET /api/users/{id}/enrolments`, which includes each enrolment's result.
 
 ## Video walkthrough
-[Watch the unlisted YouTube demo](ADD-YOUR-YOUTUBE-LINK-HERE)
+[Watch the unlisted YouTube demo](https://youtu.be/u1dTjY3UYxo?si=KPftNqeUZut7Aukp)
