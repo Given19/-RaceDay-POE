@@ -1,37 +1,176 @@
-# -RaceDay-POE
-# RaceDay - Event Management System
+# RaceDay – Event Management System
 
-## System Description
+## 1. Project Overview
 
-RaceDay is a full-stack, web-based event management system built for the South African road running, walking, and cycling community. The platform allows Event Organisers to create and manage events, categories, and participant results, while Participants can browse upcoming events, enter events, track their personal performance history, and prepare for race day using live weather and route information.
+RaceDay is an event management system developed to support the management of sporting events, participant registrations, event categories and race results.
 
-This repository contains the Part 1 submission: system planning and database design.
+The system uses an ASP.NET Core Web API for backend functionality and an ASP.NET Core MVC application for the user interface.
 
-## Roles
+The project demonstrates the use of RESTful APIs, database integration, authentication, role-based access and software testing.
 
-- **Organiser** - creates and manages events and categories, and captures participant results.
-- **Participant** - browses events, enrols in categories, and views their own enrolment and results history.
+## 2. Technologies Used
 
-Roles are enforced via a `Role` column on the `User` table and checked at the API level (planned in Part 2).
+- C#
+- ASP.NET Core Web API
+- ASP.NET Core MVC
+- Entity Framework Core
+- Microsoft SQL Server
+- HTML and CSS
+- Bootstrap
+- Swagger / OpenAPI
+- xUnit
+- Git and GitHub
+- Visual Studio 2022
 
-## Part 1 Contents (`/docs`)
+## 3. System Structure
 
-- `raceday_erd.png` / `raceday_erd.pdf` - Entity Relationship Diagram (6 entities, with primary keys, foreign keys, and cardinality).
-- `RaceDay_API_Endpoint_Plan.md` - Full API endpoint plan covering authentication, user profile, events, categories, event enrolments, and results.
-- `RaceDay_Database_Script.sql` - SQL Server script creating and seeding the full database schema.
+The Part 3 solution contains three main projects:
 
-## SQL Script Execution Evidence
+| Project | Description |
+|---|---|
+| RaceDay.Api | Backend REST API |
+| RaceDay.Api.Tests | Automated API tests |
+| RaceDay.Mvc | MVC web application |
 
-The script was run successfully against a clean `RaceDayDB` instance in SQL Server Management Studio. Rows affected match the seed data exactly: 4 Users, 3 Events, 6 Categories, 3 RouteInfo, 4 EventEnrolments, 2 Results.
+### Backend API
 
-![SQL script executed successfully](docs/sql-execution-screenshot.png)
+The API handles the application's main operations, including:
 
-## CI/CD
+- User registration and login.
+- User authentication and session management.
+- Event management.
+- Category management.
+- Participant enrolments.
+- Race results.
+- User profile management.
 
-A GitHub Actions workflow (`.github/workflows/validate-structure.yml`) validates that the `/docs` folder exists and contains the required files on every push and pull request.
+### MVC Application
 
+The MVC application provides the web interface through which users interact with the RaceDay system.
 
+## 4. User Roles
 
+The system supports two user roles:
 
-**PRESENTATION
-The Presentation walks through the planning documents, ERD design decisions, endpoint plan choices, and runs the SQL script live in SSMS.
+**Participant**
+- Create an account.
+- Log in to the system.
+- Browse available events.
+- Participate in event enrolment activities.
+- Access relevant event and result information.
+
+**Organiser**
+- Log in to the system.
+- Manage sporting events.
+- Manage event categories.
+- Access event-related management functionality.
+- Manage race results.
+
+## 5. Authentication and Security
+
+RaceDay implements authentication through the API.
+
+Security features include:
+
+- Password hashing using PBKDF2.
+- Server-side session authentication.
+- Role-based authorization.
+- Protection of restricted API endpoints.
+- Duplicate email registration prevention.
+
+## 6. Database
+
+The application uses Entity Framework Core to communicate with Microsoft SQL Server.
+
+The database stores information relating to:
+
+- Users
+- Events
+- Categories
+- Event enrolments
+- Results
+- Route information
+
+Database migrations are used to manage database schema changes.
+
+## 7. Running the Project
+
+### Requirements
+
+Make sure the following software is installed:
+
+- Visual Studio 2022
+- .NET SDK
+- Microsoft SQL Server or SQL Server LocalDB
+
+### Setup Instructions
+
+1. Clone or download the RaceDay repository.
+2. Open the Part 3 solution file in Visual Studio.
+3. Check the database connection string in the API's `appsettings.json`.
+4. Restore NuGet packages.
+5. Build the solution.
+6. Configure the API and MVC projects to run together.
+7. Start the API and MVC applications.
+
+### API Address
+
+The API is configured to run at:
+
+`http://localhost:5050`
+
+Swagger documentation can be accessed at:
+
+`http://localhost:5050/swagger`
+
+### MVC Application
+
+The MVC application runs using its configured launch profile.
+
+## 8. API Endpoints
+
+| HTTP Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/auth/register` | Register a user |
+| POST | `/api/auth/login` | Log in |
+| POST | `/api/auth/logout` | Log out |
+| GET | `/api/events` | Retrieve events |
+| GET | `/api/categories` | Retrieve categories |
+| GET | `/api/enrolments` | Retrieve enrolments |
+| GET | `/api/results` | Retrieve results |
+
+Additional endpoints support the management of events, categories, enrolments, results and user profiles.
+
+## 9. Automated Testing
+
+The `RaceDay.Api.Tests` project contains automated tests for API functionality.
+
+Testing covers areas such as:
+
+- User registration.
+- User login.
+- Event management.
+- Category management.
+- Participant enrolments.
+- Role-based access restrictions.
+- Duplicate registration handling.
+
+Tests can be executed through Visual Studio Test Explorer or the .NET CLI.
+
+## 10. Version Control
+
+Git and GitHub are used to manage the development process.
+
+The project repository:
+
+https://github.com/Given19/-RaceDay-POE
+
+Git commits document the development and changes made throughout the project.
+
+## 11. Conclusion
+
+RaceDay demonstrates the development of a web-based sporting event management system using modern .NET technologies.
+
+The project combines backend API development, MVC architecture, database management, authentication, authorization and automated testing.
+
+The overall goal is to provide a structured platform for managing sporting events and supporting participants and organisers.
