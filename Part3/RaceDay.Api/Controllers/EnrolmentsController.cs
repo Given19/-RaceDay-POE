@@ -22,16 +22,19 @@ namespace RaceDay.Api.Controllers
         private int CurrentUserId =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        private static EnrolmentResponseDto ToDto(EventEnrolment en) => new()
+        private static EnrolmentResponseDto ToDto(EventEnrolment en, int? totalFinishers = null) => new()
         {
             EnrolmentId = en.EnrolmentId,
             ParticipantId = en.ParticipantId,
+            ParticipantName = en.Participant?.Name ?? string.Empty,
             CategoryId = en.CategoryId,
             CategoryName = en.Category?.CategoryName ?? string.Empty,
             EventId = en.Category?.EventId ?? 0,
             EventName = en.Category?.Event?.EventName ?? string.Empty,
+            EventDate = en.Category?.Event?.EventDate ?? default,
             EnrolmentDate = en.EnrolmentDate,
             Status = en.Status,
+            TotalFinishers = totalFinishers,
             Result = en.Result == null ? null : new ResultResponseDto
             {
                 ResultId = en.Result.ResultId,
@@ -43,52 +46,107 @@ namespace RaceDay.Api.Controllers
         };
 
         // POST /api/categories/{categoryId}/enrolments  (Participant only)
-        [HttpPost("api/categories/{categoryId}/enrolments")]
+        [HttpPost("api/categories/{categoryId:int}/enrolments")]
         [Authorize(Roles = "Participant")]
         public async Task<ActionResult<EnrolmentResponseDto>> Enrol(int categoryId)
         {
             var category = await _context.Categories.FindAsync(categoryId);
             if (category == null) return NotFound();
 
-            bool alreadyEnrolled = await _context.EventEnrolments
-                .AnyAsync(en => en.ParticipantId == CurrentUserId && en.CategoryId == categoryId);
-            if (alreadyEnrolled) return Conflict("Already enrolled in this category.");
+            var userId = CurrentUserId;
+            var existing = await _context.EventEnrolments
+                .FirstOrDefaultAsync(en => en.ParticipantId == userId && en.CategoryId == categoryId);
 
-            var enrolment = new EventEnrolment
+            if (existing != null && existing.Status != "Cancelled")
             {
-                ParticipantId = CurrentUserId,
-                CategoryId = categoryId,
-                EnrolmentDate = DateTime.UtcNow,
-                Status = "Confirmed",
-            };
+                return Conflict("Already enrolled in this category.");
+            }
 
-            _context.EventEnrolments.Add(enrolment);
+            EventEnrolment enrolment;
+            if (existing != null)
+            {
+                // Entering again after cancelling: reactivate the same record.
+                existing.Status = "Pending";
+                existing.EnrolmentDate = DateTime.UtcNow;
+                enrolment = existing;
+            }
+            else
+            {
+                enrolment = new EventEnrolment
+                {
+                    ParticipantId = userId,
+                    CategoryId = categoryId,
+                    EnrolmentDate = DateTime.UtcNow,
+                    Status = "Pending",
+                };
+                _context.EventEnrolments.Add(enrolment);
+            }
+
             await _context.SaveChangesAsync();
 
             var saved = await _context.EventEnrolments
+                .Include(en => en.Participant)
                 .Include(en => en.Category).ThenInclude(c => c!.Event)
                 .FirstAsync(en => en.EnrolmentId == enrolment.EnrolmentId);
 
-            return CreatedAtAction(nameof(GetForUser), new { id = CurrentUserId }, ToDto(saved));
+            return CreatedAtAction(nameof(GetForUser), new { id = userId }, ToDto(saved));
         }
 
-        // GET /api/users/{id}/enrolments  (self only)
-        [HttpGet("api/users/{id}/enrolments")]
+        // GET /api/users/{id}/enrolments  (own enrolments only, with results and finisher counts)
+        [HttpGet("api/users/{id:int}/enrolments")]
         public async Task<ActionResult<IEnumerable<EnrolmentResponseDto>>> GetForUser(int id)
         {
             if (id != CurrentUserId) return Forbid();
 
             var enrolments = await _context.EventEnrolments
+                .Include(en => en.Participant)
                 .Include(en => en.Category).ThenInclude(c => c!.Event)
                 .Include(en => en.Result)
                 .Where(en => en.ParticipantId == id)
+                .OrderByDescending(en => en.Category!.Event!.EventDate)
                 .ToListAsync();
 
-            return Ok(enrolments.Select(ToDto));
+            // How many people finished each event (for "47th of 312").
+            var eventIds = enrolments.Select(en => en.Category!.EventId).Distinct().ToList();
+
+            var finisherEventIds = await _context.Results
+                .Where(r => r.Status == "Finished" && eventIds.Contains(r.Enrolment!.Category!.EventId))
+                .Select(r => r.Enrolment!.Category!.EventId)
+                .ToListAsync();
+
+            var finisherCounts = finisherEventIds
+                .GroupBy(eventId => eventId)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            return Ok(enrolments.Select(en =>
+            {
+                int? total = en.Result != null
+                    ? finisherCounts.GetValueOrDefault(en.Category!.EventId)
+                    : (int?)null;
+                return ToDto(en, total);
+            }));
+        }
+
+        // PUT /api/enrolments/{id}/confirm  (Organiser, owner of the event)
+        [HttpPut("api/enrolments/{id:int}/confirm")]
+        [Authorize(Roles = "Organiser")]
+        public async Task<IActionResult> Confirm(int id)
+        {
+            var enrolment = await _context.EventEnrolments
+                .Include(en => en.Category).ThenInclude(c => c!.Event)
+                .FirstOrDefaultAsync(en => en.EnrolmentId == id);
+
+            if (enrolment == null) return NotFound();
+            if (enrolment.Category!.Event!.OrganiserId != CurrentUserId) return Forbid();
+            if (enrolment.Status == "Cancelled") return Conflict("A cancelled enrolment cannot be confirmed.");
+
+            enrolment.Status = "Confirmed";
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
         // DELETE /api/enrolments/{id}  (Participant, owner only)
-        [HttpDelete("api/enrolments/{id}")]
+        [HttpDelete("api/enrolments/{id:int}")]
         [Authorize(Roles = "Participant")]
         public async Task<IActionResult> Cancel(int id)
         {

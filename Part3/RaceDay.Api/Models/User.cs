@@ -21,7 +21,10 @@ namespace RaceDay.Api.Models
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-        // Navigation
+        // URL of the profile picture stored in Azure Blob Storage
+        [MaxLength(500)]
+        public string? ProfilePictureUrl { get; set; }
+
         public ICollection<Event> OrganisedEvents { get; set; } = new List<Event>();
         public ICollection<EventEnrolment> Enrolments { get; set; } = new List<EventEnrolment>();
     }

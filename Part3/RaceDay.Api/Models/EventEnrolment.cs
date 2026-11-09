@@ -12,8 +12,8 @@
 
         public DateTime EnrolmentDate { get; set; } = DateTime.UtcNow;
 
-        // "Confirmed" or "Cancelled"
-        public string Status { get; set; } = "Confirmed";
+        // "Pending" (new), "Confirmed" (accepted by the Organiser) or "Cancelled"
+        public string Status { get; set; } = "Pending";
 
         public Result? Result { get; set; }
     }

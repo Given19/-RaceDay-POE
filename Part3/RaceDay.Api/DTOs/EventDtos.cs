@@ -34,6 +34,8 @@ namespace RaceDay.Api.DTOs
         public string? Description { get; set; }
         public decimal Distance { get; set; }
         public string EventType { get; set; } = string.Empty;
+        public string? BannerUrl { get; set; }
+        public int EnrolmentCount { get; set; }
     }
 
     public class CategoryCreateDto

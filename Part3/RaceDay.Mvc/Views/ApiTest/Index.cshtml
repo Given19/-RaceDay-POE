@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "API Connection Test";
+}
+
+<h1>RaceDay API Connection</h1>
+
+<h2>@ViewBag.Message</h2>
+
+@if (ViewBag.Result != null)
+{
+    <pre>@System.Text.Json.JsonSerializer.Serialize(
+        ViewBag.Result,
+        new System.Text.Json.JsonSerializerOptions
+        {
+            WriteIndented = true
+        })</pre>
+}

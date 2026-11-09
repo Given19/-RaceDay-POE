@@ -20,6 +20,15 @@ namespace RaceDay.Api.Controllers
             _context = context;
         }
 
+        private static UserResponseDto ToDto(User user) => new()
+        {
+            UserId = user.UserId,
+            Name = user.Name,
+            Email = user.Email,
+            Role = user.Role,
+            ProfilePictureUrl = user.ProfilePictureUrl,
+        };
+
         // POST /api/auth/register
         [HttpPost("register")]
         [AllowAnonymous]
@@ -48,15 +57,7 @@ namespace RaceDay.Api.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            var response = new UserResponseDto
-            {
-                UserId = user.UserId,
-                Name = user.Name,
-                Email = user.Email,
-                Role = user.Role,
-            };
-
-            return CreatedAtAction(nameof(Register), new { id = user.UserId }, response);
+            return CreatedAtAction(nameof(Register), new { id = user.UserId }, ToDto(user));
         }
 
         // POST /api/auth/login
@@ -71,19 +72,13 @@ namespace RaceDay.Api.Controllers
                 return Unauthorized("Invalid email or password.");
             }
 
-            // Server-side session: UserId and Role are stored in the session
-            // store, keyed by a session ID in the cookie - not in the cookie itself.
+            // Server-side session: UserId and Role are stored on the server,
+            // keyed by a session ID in the cookie.
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetString("Role", user.Role);
             HttpContext.Session.SetString("Name", user.Name);
 
-            return Ok(new UserResponseDto
-            {
-                UserId = user.UserId,
-                Name = user.Name,
-                Email = user.Email,
-                Role = user.Role,
-            });
+            return Ok(ToDto(user));
         }
 
         // POST /api/auth/logout

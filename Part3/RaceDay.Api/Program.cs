@@ -1,7 +1,8 @@
 using RaceDay.Api.Auth;
+using RaceDay.Api.Data;
+using RaceDay.Api.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
-using RaceDay.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,8 +12,10 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<RaceDayContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("RaceDayDb")));
 
-// Server-side session store: only a session ID goes in the cookie,
-// UserId and Role are held server-side and looked up on each request.
+// Images (event banners and profile pictures) go to Azure Blob Storage.
+builder.Services.AddSingleton<IBlobStorageService, AzureBlobStorageService>();
+
+// Server-side session store: only a session ID goes in the cookie.
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -24,7 +27,7 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddAuthentication(SessionAuthenticationHandler.SchemeName)
-    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, SessionAuthenticationHandler>(
+    .AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(
         SessionAuthenticationHandler.SchemeName, options => { });
 
 builder.Services.AddAuthorization();
@@ -36,7 +39,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "RaceDay API",
         Version = "v1",
-        Description = "RESTful API for the RaceDay event management system (PROG6212 POE Part 2)."
+        Description = "RESTful API for the RaceDay event management system (PROG6212 POE)."
     });
 });
 

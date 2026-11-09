@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "RaceDay";
+}
+
+<section class="hero">
+    <div class="hero-content">
+        <p class="eyebrow">YOUR RACE. YOUR JOURNEY.</p>
+        <h1>Welcome to RaceDay</h1>
+        <p>
+            Discover running events, register for races,
+            manage your participation and follow race results.
+        </p>
+
+        <div class="hero-buttons">
+            <a asp-controller="Events" asp-action="Index" class="btn-main">
+                Explore Events
+            </a>
+            <a asp-controller="Account" asp-action="Register" class="btn-outline">
+                Create Account
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature">
+        <h2>Find Events</h2>
+        <p>Explore upcoming running events.</p>
+    </div>
+
+    <div class="feature">
+        <h2>Join Races</h2>
+        <p>Register and manage your enrolments.</p>
+    </div>
+
+    <div class="feature">
+        <h2>View Results</h2>
+        <p>Follow race results and finishing positions.</p>
+    </div>
+</section>

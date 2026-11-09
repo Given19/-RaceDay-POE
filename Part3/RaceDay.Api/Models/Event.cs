@@ -21,15 +21,16 @@ namespace RaceDay.Api.Models
         [MaxLength(500)]
         public string? Description { get; set; }
 
-        // Added in Part 2 per the brief's functional requirements
-        // (Part 1 only captured distance at Category level; the Part 2 brief
-        // explicitly asks for a top-level event distance and event type).
         [Required]
         public decimal Distance { get; set; }
 
         // "Run", "Walk", or "Cycle"
         [Required, MaxLength(20)]
         public string EventType { get; set; } = string.Empty;
+
+        // URL of the event banner stored in Azure Blob Storage
+        [MaxLength(500)]
+        public string? BannerUrl { get; set; }
 
         public ICollection<Category> Categories { get; set; } = new List<Category>();
     }

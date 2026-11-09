@@ -18,7 +18,6 @@ namespace RaceDay.Api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // ---- User ----
             modelBuilder.Entity<User>(e =>
             {
                 e.HasIndex(u => u.Email).IsUnique();
@@ -26,7 +25,6 @@ namespace RaceDay.Api.Data
                     "CK_User_Role", "[Role] IN ('Organiser', 'Participant')"));
             });
 
-            // ---- Event ----
             modelBuilder.Entity<Event>(e =>
             {
                 e.HasOne(ev => ev.Organiser)
@@ -34,24 +32,29 @@ namespace RaceDay.Api.Data
                  .HasForeignKey(ev => ev.OrganiserId)
                  .OnDelete(DeleteBehavior.Restrict);
 
+                e.Property(ev => ev.Distance).HasPrecision(18, 2);
+
                 e.ToTable("Event", t => t.HasCheckConstraint(
                     "CK_Event_Type", "[EventType] IN ('Run', 'Walk', 'Cycle')"));
             });
 
-            // ---- Category ----
             modelBuilder.Entity<Category>(e =>
             {
                 e.HasOne(c => c.Event)
                  .WithMany(ev => ev.Categories)
                  .HasForeignKey(c => c.EventId)
                  .OnDelete(DeleteBehavior.Cascade);
+
+                e.Property(c => c.Distance).HasPrecision(18, 2);
+                e.Property(c => c.EntryFee).HasPrecision(18, 2);
+
                 e.ToTable("Category");
             });
 
-            // ---- EventEnrolment ----
             modelBuilder.Entity<EventEnrolment>(e =>
             {
                 e.HasKey(en => en.EnrolmentId);
+
                 e.HasOne(en => en.Participant)
                  .WithMany(u => u.Enrolments)
                  .HasForeignKey(en => en.ParticipantId)
@@ -66,10 +69,9 @@ namespace RaceDay.Api.Data
                 e.HasIndex(en => new { en.ParticipantId, en.CategoryId }).IsUnique();
 
                 e.ToTable("EventEnrolment", t => t.HasCheckConstraint(
-                    "CK_Enrolment_Status", "[Status] IN ('Confirmed', 'Cancelled')"));
+                    "CK_Enrolment_Status", "[Status] IN ('Pending', 'Confirmed', 'Cancelled')"));
             });
 
-            // ---- Result (one-to-zero-or-one from EventEnrolment) ----
             modelBuilder.Entity<Result>(e =>
             {
                 e.HasOne(r => r.Enrolment)
@@ -83,14 +85,15 @@ namespace RaceDay.Api.Data
                     "CK_Result_Status", "[Status] IN ('Finished', 'DNF', 'DNS')"));
             });
 
-            // ---- RouteInfo ----
             modelBuilder.Entity<RouteInfo>(e =>
             {
                 e.HasKey(r => r.RouteId);
+
                 e.HasOne(r => r.Category)
                  .WithMany()
                  .HasForeignKey(r => r.CategoryId)
                  .OnDelete(DeleteBehavior.Cascade);
+
                 e.ToTable("RouteInfo");
             });
         }

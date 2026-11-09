@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using RaceDay.Api.Data;
-using System.Linq;
+using RaceDay.Api.Services;
 
 namespace RaceDay.Api.Tests
 {
@@ -23,8 +24,12 @@ namespace RaceDay.Api.Tests
                 services.AddDbContext<RaceDayContext>(options =>
                     options.UseInMemoryDatabase(DbName));
 
+                // Tests never talk to Azure.
+                services.RemoveAll<IBlobStorageService>();
+                services.AddSingleton<IBlobStorageService, FakeBlobStorageService>();
+
                 services.AddAuthentication(TestAuthHandler.SchemeName)
-                    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, TestAuthHandler>(
+                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
                         TestAuthHandler.SchemeName, options => { });
             });
         }

@@ -36,9 +36,11 @@ namespace RaceDay.Api.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("Distance")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("EntryFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("EventId")
@@ -59,11 +61,16 @@ namespace RaceDay.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventId"));
 
+                    b.Property<string>("BannerUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<decimal>("Distance")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("EventDate")
@@ -127,7 +134,7 @@ namespace RaceDay.Api.Migrations
 
                     b.ToTable("EventEnrolment", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Enrolment_Status", "[Status] IN ('Confirmed', 'Cancelled')");
+                            t.HasCheckConstraint("CK_Enrolment_Status", "[Status] IN ('Pending', 'Confirmed', 'Cancelled')");
                         });
                 });
 
@@ -211,6 +218,10 @@ namespace RaceDay.Api.Migrations
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfilePictureUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Role")
                         .IsRequired()
